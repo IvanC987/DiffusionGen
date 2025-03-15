@@ -69,12 +69,6 @@
       </select>
     </div>
 
-    <!-- Real-Time Denoising with label above checkbox -->
-<!--    <div class="centered-checkbox">-->
-<!--      <label for="realtime_denoise">Real-Time Denoising</label>-->
-<!--      <input type="checkbox" id="realtime_denoise" name="realtime_denoise">-->
-<!--    </div>-->
-
     <div class="centered-checkbox">
       <label for="realtime_denoise">Real-Time Denoising</label>
       <input type="checkbox" id="realtime_denoise" name="realtime_denoise">
@@ -217,7 +211,7 @@
             </div>
             <div class="config-item">
               <label for="denoising_steps">Denoising Steps:</label>
-              <input type="number" id="denoising_steps" name="denoising_steps" value="20" min="1">
+              <input type="number" id="denoising_steps" name="denoising_steps" value="5" min="1">
             </div>
           </div>
 
@@ -225,13 +219,6 @@
           <div class="file-input-wrapper">
             <input type="file" id="image" name="image">
           </div>
-
-<!--          <label for="strength">-->
-<!--            Strength (img2img): <span id="strengthValue">0.50</span>-->
-<!--          </label>-->
-<!--          &lt;!&ndash; Adjust slider from 0.10 to 0.90, step 0.01 &ndash;&gt;-->
-<!--          <input type="range" id="strength" name="strength" min="0.10" max="0.90" step="0.01" value="0.50">-->
-
 
           <!-- Container to hold both slider and checkbox on one row -->
         <div style="display: flex; align-items: center;">
@@ -293,13 +280,8 @@
             <p>Generated Image Will Appear Here</p>
           </div>
           <img id="resultImage" src="" alt="Generated Image" style="display: none;">
-<!--          <progress id="progressBar" value="0" max="100" style="display: none;"></progress>-->
           <progress id="progressBar" value="0" max="1000" style="display: none;"></progress>
           <div id="progressText" style="display: none;">0/1000</div>
-<!--          <div id="progressContainer" class="progress-container" style="display: none;">-->
-<!--              <div id="progressBarFill" class="progress-bar-fill"></div>-->
-<!--              <div id="progressText" class="progress-text">0/1000</div>-->
-<!--          </div>-->
 
           <button id="downloadButton" style="display: none;" type="button">Download Image</button>
         </div>

@@ -108,14 +108,12 @@ def generate():
         image_file = request.files['image']
         image = Image.open(image_file).convert("RGB")
         img2img = True
-        print("USING IMG TO IMG")
 
     if 'mask' in request.files and request.files['mask'].filename != '':
         mask_file = request.files['mask']
         mask = Image.open(mask_file).convert("L")  # Grayscale mask
         inpaint = True
         noise_img2img = True  # If inpainting, this should be True
-        print("USING INPAINTING")
 
     # Debugging: Print parsed inputs
     print(f"Prompt: {prompt}")
@@ -149,12 +147,7 @@ def generate():
         try:
             # .getdata() returns a list of tuples, where len of list == width * height, len of each tuple is 3
             # Essentially shape == (w*h, 3), then reshape to (1, w, h, 3) and permute to (1, 3, h, w)
-            # Note that channel = 3
-
-
-            # If no noise added, the first decoded latent in realtime denoising should == input image!
-
-
+            # If no noise added, the first decoded latent in realtime denoising should == input image
             image = torch.tensor(image.getdata(), dtype=torch.float32).reshape(1, image_size, image_size, 3).permute(0, 3, 2, 1)
             image = ((image / 255) - 0.5) * 2
             clean_latents = vae.encode(image).latent_dist.sample() * 0.18215  # Scale factor for VAE from SD
@@ -233,18 +226,15 @@ def generate():
 
     if realtime_denoise:  # Create the video
         create_denoising_video(video_fps)
-        print("CREATING DENOISING VIDEO")
 
 
     response_data = {"image": img_str}
 
     if img_warning is not None:
         response_data["img_warning"] = img_warning
-        print("ADDING IMG WARNING")
 
     if msk_warning is not None:
         response_data["msk_warning"] = msk_warning
-        print("ADDING MSK WARNING")
 
     return jsonify(response_data)
 
@@ -267,7 +257,6 @@ def gen_image(latents, clean_latents, mask, prompt, starting_step, denoising_ste
 
     # Remove the batch dimension
     if upsampler is not None:
-        print(f"NOW UPSAMPLING USING {esrgan_type}")
         img_tensor = upscale_tensor(img_tensor)
     else:
         # Need manually permute here if not using upsampler
@@ -282,11 +271,6 @@ def gen_image(latents, clean_latents, mask, prompt, starting_step, denoising_ste
 
 
 def upscale_tensor(input_tensor: torch.Tensor):
-    """
-
-    :param input_tensor: Should be of shape (b, c, h, w)
-    :return:
-    """
     assert len(input_tensor.shape) == 4, f"Expected input_tensor to be of shape (b, c, h, w) instead got {input_tensor.shape=}"
     # input_tensor = input_tensor.to(device)  # Move to device
 

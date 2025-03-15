@@ -13,27 +13,27 @@
             <h1><i class="fas fa-question-circle"></i> Help & Documentation</h1>
             <p>Your guide to understanding settings and prompt creation.</p>
         </header>
-
+        <br>
         <div class="card">
             <h2><i class="fas fa-cogs"></i> Basic Settings</h2>
             <ul>
-                <li><strong>Prompt:</strong> Enter a descriptive text to guide AI image generation.</li>
-                <li><strong>CFG Scale:</strong> Controls how strictly the AI follows the input prompt.
+                <li><strong>Prompt:</strong> Enter a descriptive text to guide image generation.</li>
+                <li><strong>CFG Scale:</strong> Controls how strictly the model follows the input prompt.
                     <ul>
                         <li>Lower values (1-4) allow more randomness.</li>
-                        <li>Higher values (7-12) make the AI adhere strictly to the prompt.</li>
+                        <li>Higher values (7-12) make the model adhere strictly to the prompt.</li>
                     </ul>
                 </li>
                 <li><strong>Batch Size:</strong> Number of images generated per request.</li>
                 <li><strong>Denoising Steps:</strong> Number of noise-removal iterations.
                     <ul>
                         <li><strong>DDPM:</strong> Recommended: <strong>1000</strong> steps.</li>
-                        <li><strong>DDIM:</strong> Recommended: <strong>20-40</strong> steps.</li>
+                        <li><strong>DDIM:</strong> Recommended: <strong>5-10</strong> steps.</li>
                     </ul>
                 </li>
             </ul>
         </div>
-
+        <br>
         <div class="card">
             <h2><i class="fas fa-sliders-h"></i> Advanced Settings</h2>
             <ul>
@@ -43,41 +43,40 @@
                         <li><strong>DDPM:</strong> More stable, requires more steps.</li>
                     </ul>
                 </li>
-                <li><strong>Real-ESRGAN:</strong> AI upscaling for sharper images.
+                <li><strong>Real-ESRGAN:</strong> Upscaling for sharper images.
                     <ul>
-                        <li><strong>2x:</strong> Doubles resolution.</li>
-                        <li><strong>4x:</strong> Quadruples resolution.</li>
+                        <li><strong>No Upscaling:</strong> Resolution stays the same (128x128).</li>
+                        <li><strong>2x Upscaling:</strong> Doubles resolution.</li>
+                        <li><strong>4x Upscaling:</strong> Quadruples resolution.</li>
                     </ul>
                 </li>
-                <li><strong>Real-Time Denoising:</strong> View denoising progress at each step.</li>
+                <li><strong>Real-Time Denoising:</strong> View denoising progress at each step. Intermediate images will be saved in `DiffusionGen\inference\flask_outputs\denoising_temp` and compiled video will be saved in `DiffusionGen\inference\flask_outputs\denoising_outputs`</li>
             </ul>
         </div>
-
+        <br>
         <div class="card">
             <h2><i class="fas fa-image"></i> Image Modifications</h2>
             <ul>
                 <li><strong>Upload Image (img2img):</strong> Modify an uploaded image.</li>
                 <li><strong>Strength (img2img):</strong> Affects how much AI modifies the input.
                     <ul>
-                        <li><strong>0.1 - 0.4:</strong> Minor changes.</li>
-                        <li><strong>0.5 - 0.7:</strong> Balanced modifications.</li>
-                        <li><strong>0.8 - 0.9:</strong> Heavy modifications.</li>
+                        <li>Lower Value == More Adjustments and vice versa</li>
                     </ul>
                 </li>
                 <li><strong>Upload Mask (Inpainting):</strong> Selective editing within masked areas.</li>
             </ul>
         </div>
-
+        <br>
         <div class="card">
             <h2><i class="fas fa-random"></i> Random Prompt Generator</h2>
             <p>Generate AI-generated prompts for inspiration.</p>
             <ul>
                 <li>Select a category (e.g., <em>Animals, Humans, Scenery</em>).</li>
                 <li>Click <strong>Generate Random Prompt</strong>.</li>
-                <li>If no category is selected, an error appears.</li>
+                <li>Can choose to use either prompts used in training (default) or completely new prompts that model has not seen before</li>
             </ul>
         </div>
-
+        <br>
         <div class="card">
             <h2><i class="fas fa-lightbulb"></i> Prompt Creation Tips</h2>
             <ol>
@@ -85,19 +84,23 @@
                 <li><strong>Structured Descriptions:</strong> Use Stable Diffusion-style formatting.</li>
                 <li><strong>Balance Specificity:</strong> Avoid overly complex descriptions.</li>
                 <li><strong>Use Sensory Details:</strong> Mention lighting, moods, textures.</li>
-                <li><strong>Experiment with Styles:</strong> Try "cinematic lighting," "watercolor art," etc.</li>
             </ol>
         </div>
 
-        <div class="card example-prompts">
-            <h3><i class="fas fa-pen"></i> Example Training Prompts:</h3>
-            <blockquote><em>Beneath towering, snow-capped peaks, a majestic tiger leaps...</em></blockquote>
-            <blockquote><em>Golden afternoon light bathes a tranquil pond...</em></blockquote>
-            <blockquote><em>Moonlight filters through dense reeds of a misty wetland...</em></blockquote>
-            <blockquote><em>Vivid hues of orange and pink paint the dusky sky.</em></blockquote>
-        </div>
+        <br>
+        <p><strong>A few things to note:</strong></p>
+        <ul>
+            <li><strong>Frontend Design:</strong> My HTML/CSS skills are mediocre at best, so pardon the terrible frontend design. (Most of the HTML/CSS/JS actually came from GPT 😅)</li>
+            <li><strong>Dark Mode:</strong> It doesn’t look great—wouldn’t recommend using it.</li>
+            <li><strong>Category Checkboxes:</strong> For some reason, they are extremely stubborn. I tried multiple times but couldn’t get them to align properly.</li>
+            <li><strong>CFG Limitations:</strong> Doesn’t quite work as expected due to the limited dataset size (fixed at 4.5 during training).</li>
+            <li><strong>Removing Uploaded Image/Mask:</strong> I wanted to add a button for this, but it didn’t quite work. As a workaround, just click “Choose File” and immediately cancel to remove.</li>
+        </ul>
 
-        <p>A few things to note: Not good at HTML/CSS, so light/dark mode, category feature not aligned, word suggestion is quite bumpy, reqiures users to click generate before consecutibe words update, remove image button looks bad and such. (Shrug)</p>
+        <p>...And the list goes on... oh well. ¯\_(ツ)_/¯</p>
+
+        <p>If you enjoyed playing with this, remember to ⭐ <strong>star my repo</strong>. Thanks! :-)</p>
+
 
         <button onclick="window.history.back();" class="back-btn"><i class="fas fa-arrow-left"></i> Back</button>
     </div>
