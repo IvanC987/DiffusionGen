@@ -1,0 +1,5 @@
+__pycache__
+datasets
+inference/flask_outputs
+inference/diffusion_model_weights/*.pth
+diffusion_gen_notes.txt

@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Diffusion Model Interface</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <!-- Top Section -->
+  <div class="top-section">
+    <div class="hamburger" id="hamburger-button">
+      <!-- Three horizontal lines icon -->
+      <div class="line"></div>
+      <div class="line"></div>
+      <div class="line"></div>
+    </div>
+    <div class="top-title">
+      <h1>My Diffusion Model</h1>
+    </div>
+    <div class="top-controls">
+      <a href="{{ url_for('help_page') }}">
+        <button id="help-button">Questions/Help</button>
+      </a>
+      <button id="theme-toggle">Light/Dark Mode</button>
+    </div>
+  </div>
+
+
+<form id="generateForm">
+  <!-- Advanced Features Drawer (Hidden by default) -->
+  <div class="advanced-panel" id="advancedPanel">
+    <h2>Advanced Settings</h2>
+
+    <label for="seed">Random Seed:</label>
+    <input type="number" id="seed" name="seed" placeholder="Optional Seed">
+
+    <label for="diffusion_model_type">Select Diffusion Model:</label>
+    <select id="diffusion_model_type" name="diffusion_model_type" required>
+      <option value="" disabled selected>Select a Diffusion Model</option>
+      {% for model in diffusion_model_list %}
+        <option value="{{ model }}">{{ model }}</option>
+      {% endfor %}
+    </select>
+
+
+    <label for="sampling_method">Sampling Method:</label>
+    <select id="sampling_method" name="sampling_method">
+      <option value="ddpm">DDPM</option>
+      <option value="ddim" selected>DDIM</option>
+    </select>
+
+    <label for="esrgan">Real-ESRGAN:</label>
+    <select id="esrgan" name="esrgan">
+      <option value="None">No Upscaling</option>
+      <option value="2x" selected>2x Upscaling</option>
+      <option value="4x">4x Upscaling</option>
+    </select>
+
+    <!-- New Dropdown for Consecutive Words Suggestion -->
+    <div class="dropdown-container">
+      <label for="consecutiveWords">Consecutive Words:</label>
+      <select id="consecutiveWords" name="consecutiveWords">
+        <option value="1" selected>1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+    </div>
+
+    <!-- Real-Time Denoising with label above checkbox -->
+<!--    <div class="centered-checkbox">-->
+<!--      <label for="realtime_denoise">Real-Time Denoising</label>-->
+<!--      <input type="checkbox" id="realtime_denoise" name="realtime_denoise">-->
+<!--    </div>-->
+
+    <div class="centered-checkbox">
+      <label for="realtime_denoise">Real-Time Denoising</label>
+      <input type="checkbox" id="realtime_denoise" name="realtime_denoise">
+      <span id="realtimeMessage" style="color:red; font-size:small; display:none;"></span>
+    </div>
+
+
+    <!-- Denoising Video FPS Input -->
+    <div class="config-item" style="margin-top: 10px;">
+      <label for="video_fps">Denoising Video FPS:</label>
+      <input type="number" id="video_fps" name="video_fps" min="5" max="120" step="5" value="60">
+    </div>
+
+
+
+    <!-- Generate Random Prompt Button -->
+    <button id="randomPromptBtn" type="button">Generate Random Prompt</button>
+    <div id="randomPromptError" class="error-msg" style="display: none;">Please select at least one category before generating a random prompt.</div>
+
+    <!-- Select All / Deselect All Buttons -->
+    <div class="button-row top-margin">
+      <button id="selectAllBtn" type="button">Select All</button>
+      <button id="deselectAllBtn" type="button">Deselect All</button>
+    </div>
+
+
+    <!-- New checkbox for Use Training Prompts -->
+    <div class="centered-checkbox">
+      <label for="use_training_prompts">Use Training Prompts</label>
+      <input type="checkbox" id="use_training_prompts" name="use_training_prompts" checked>
+    </div>
+
+
+    <!-- Random Prompt Categories -->
+    <div class="random-prompt-categories">
+      <h3>Humans</h3>
+      <div class="checkbox-list">
+          <input type="checkbox" id="manCheck" name="manCheck" checked>
+          <label for="manCheck">Man</label>
+          <input type="checkbox" id="womanCheck" name="womanCheck" checked>
+          <label for="womanCheck">Woman</label>
+          <input type="checkbox" id="girlCheck" name="girlCheck" checked>
+          <label for="girlCheck">Girl</label>
+          <input type="checkbox" id="boyCheck" name="boyCheck" checked>
+          <label for="boyCheck">Boy</label>
+          <input type="checkbox" id="teenCheck" name="teenCheck" checked>
+          <label for="teenCheck">Teen</label>
+          <input type="checkbox" id="kidCheck" name="kidCheck" checked>
+          <label for="kidCheck">Kid</label>
+          <input type="checkbox" id="guyCheck" name="guyCheck" checked>
+          <label for="guyCheck">Guy</label>
+      </div>
+
+      <h3>Mythical Beings</h3>
+      <div class="checkbox-list">
+          <input type="checkbox" id="qilinCheck" name="qilinCheck" checked>
+          <label for="qilinCheck">Qilin</label>
+          <input type="checkbox" id="leviathanCheck" name="leviathanCheck" checked>
+          <label for="leviathanCheck">Leviathan</label>
+          <input type="checkbox" id="fairyCheck" name="fairyCheck" checked>
+          <label for="fairyCheck">Fairy</label>
+          <input type="checkbox" id="dragonCheck" name="dragonCheck" checked>
+          <label for="dragonCheck">Dragon</label>
+          <input type="checkbox" id="phoenixCheck" name="phoenixCheck" checked>
+          <label for="phoenixCheck">Phoenix</label>
+          <input type="checkbox" id="mermaidCheck" name="mermaidCheck" checked>
+          <label for="mermaidCheck">Mermaid</label>
+      </div>
+
+      <h3>Animals</h3>
+      <div class="checkbox-list">
+          <input type="checkbox" id="dogCheck" name="dogCheck" checked>
+          <label for="dogCheck">Dog</label>
+          <input type="checkbox" id="catCheck" name="catCheck" checked>
+          <label for="catCheck">Cat</label>
+          <input type="checkbox" id="fishCheck" name="fishCheck" checked>
+          <label for="fishCheck">Fish</label>
+          <input type="checkbox" id="birdCheck" name="birdCheck" checked>
+          <label for="birdCheck">Bird</label>
+          <input type="checkbox" id="horseCheck" name="horseCheck" checked>
+          <label for="horseCheck">Horse</label>
+          <input type="checkbox" id="tigerCheck" name="tigerCheck" checked>
+          <label for="tigerCheck">Tiger</label>
+          <input type="checkbox" id="wolfCheck" name="wolfCheck" checked>
+          <label for="wolfCheck">Wolf</label>
+          <input type="checkbox" id="pandaCheck" name="pandaCheck" checked>
+          <label for="pandaCheck">Panda</label>
+          <input type="checkbox" id="rhinoCheck" name="rhinoCheck" checked>
+          <label for="rhinoCheck">Rhino</label>
+          <input type="checkbox" id="whaleCheck" name="whaleCheck" checked>
+          <label for="whaleCheck">Whale</label>
+      </div>
+
+      <h3>Scenery</h3>
+      <div class="checkbox-list">
+          <input type="checkbox" id="desertCheck" name="desertCheck" checked>
+          <label for="desertCheck">Desert</label>
+          <input type="checkbox" id="rainforestCheck" name="rainforestCheck" checked>
+          <label for="rainforestCheck">Rainforest</label>
+          <input type="checkbox" id="mountainLakeCheck" name="mountainLakeCheck" checked>
+          <label for="mountainLakeCheck">Mountain Lake</label>
+          <input type="checkbox" id="snowyMountainCheck" name="snowyMountainCheck" checked>
+          <label for="snowyMountainCheck">Snowy Mountain</label>
+          <input type="checkbox" id="tropicalIslandCheck" name="tropicalIslandCheck" checked>
+          <label for="tropicalIslandCheck">Tropical Island</label>
+          <input type="checkbox" id="deepSeaCheck" name="deepSeaCheck" checked>
+          <label for="deepSeaCheck">Deep Sea</label>
+          <input type="checkbox" id="nightSkyCheck" name="nightSkyCheck" checked>
+          <label for="nightSkyCheck">Night Sky</label>
+          <input type="checkbox" id="glacierCheck" name="glacierCheck" checked>
+          <label for="glacierCheck">Glacier</label>
+          <input type="checkbox" id="volcanoCheck" name="volcanoCheck" checked>
+          <label for="volcanoCheck">Volcano</label>
+          <input type="checkbox" id="auroraCheck" name="auroraCheck" checked>
+          <label for="auroraCheck">Aurora Borealis</label>
+          <input type="checkbox" id="underwaterCaveCheck" name="underwaterCaveCheck" checked>
+          <label for="underwaterCaveCheck">Underwater Cave</label>
+          <input type="checkbox" id="savannahCheck" name="savannahCheck" checked>
+          <label for="savannahCheck">Savannah</label>
+      </div>
+  </div>
+  </div>
+
+  <!-- Main Content (shifted when advanced panel is shown) -->
+  <div class="main-content">
+    <div class="container">
+
+      <!-- Left Section -->
+      <div class="sidebar">
+        <h2>Configuration</h2>
+          <!-- Single Row with 3 Items -->
+          <div class="config-row">
+            <div class="config-item">
+              <label for="batch_size">Batch Size:</label>
+              <input type="number" id="batch_size" name="batch_size" value="1" min="1">
+            </div>
+            <div class="config-item">
+              <label for="cfg_scale">CFG Scale:</label>
+              <input type="number" id="cfg_scale" name="cfg_scale" value="4.5" step="0.1">
+            </div>
+            <div class="config-item">
+              <label for="denoising_steps">Denoising Steps:</label>
+              <input type="number" id="denoising_steps" name="denoising_steps" value="20" min="1">
+            </div>
+          </div>
+
+          <label>Upload Image (img2img):</label>
+          <div class="file-input-wrapper">
+            <input type="file" id="image" name="image">
+          </div>
+
+<!--          <label for="strength">-->
+<!--            Strength (img2img): <span id="strengthValue">0.50</span>-->
+<!--          </label>-->
+<!--          &lt;!&ndash; Adjust slider from 0.10 to 0.90, step 0.01 &ndash;&gt;-->
+<!--          <input type="range" id="strength" name="strength" min="0.10" max="0.90" step="0.01" value="0.50">-->
+
+
+          <!-- Container to hold both slider and checkbox on one row -->
+        <div style="display: flex; align-items: center;">
+          <!-- Left half: Strength slider and label -->
+          <div style="width: 50%; padding-right: 10px;">
+            <label for="strength">
+              Strength (img2img): <span id="strengthValue">0.50</span>
+            </label>
+            <input
+              type="range"
+              id="strength"
+              name="strength"
+              min="0.10"
+              max="0.90"
+              step="0.01"
+              value="0.50"
+              style="width: 100%;"
+            >
+          </div>
+
+          <!-- Right half: Noise Image checkbox -->
+          <div style="width: 50%; display: flex; align-items: center;">
+            <input type="checkbox" id="noise_image" name="noise_image" style="margin-right: -25px;" checked>
+            <label for="noise_image">Noise Image</label>
+          </div>
+        </div>
+
+
+
+
+          <a href="/editor"><button type="button">Create Binary Mask For Inpainting</button></a>
+
+          <label>Upload Mask (inpainting):</label>
+          <div class="file-input-wrapper">
+            <input type="file" id="mask" name="mask">
+          </div>
+
+          <!-- Prompt Row: Prompt -->
+          <div class="prompt-row" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px;">
+              <div class="prompt-container" style="flex: 1; position: relative;">
+                <label for="prompt">Prompt:</label>
+                <input type="text" id="prompt" name="prompt" placeholder="Enter your prompt" required style="width:100%;">
+                <!-- Suggestions dropdown -->
+                <div id="suggestionsBox" class="suggestions-box"></div>
+              </div>
+          </div>
+
+
+
+          <button type="submit" class="generate-btn" style="flex: 0;">Generate</button>
+
+       </div>
+
+      <!-- Right Section (Output) -->
+      <div class="output-section">
+        <div class="image-container">
+          <h2>Generated Image</h2>
+          <div id="imagePlaceholder">
+            <p>Generated Image Will Appear Here</p>
+          </div>
+          <img id="resultImage" src="" alt="Generated Image" style="display: none;">
+<!--          <progress id="progressBar" value="0" max="100" style="display: none;"></progress>-->
+          <progress id="progressBar" value="0" max="1000" style="display: none;"></progress>
+          <div id="progressText" style="display: none;">0/1000</div>
+<!--          <div id="progressContainer" class="progress-container" style="display: none;">-->
+<!--              <div id="progressBarFill" class="progress-bar-fill"></div>-->
+<!--              <div id="progressText" class="progress-text">0/1000</div>-->
+<!--          </div>-->
+
+          <button id="downloadButton" style="display: none;" type="button">Download Image</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</form>
+
+  <script>
+
+  function startRealTimeUpdates() {
+    // Create an EventSource that listens to the /generate_realtime endpoint.
+    const evtSource = new EventSource('/generate_realtime');
+    evtSource.onmessage = function(event) {
+      // event.data will contain the base64 string for the intermediate image.
+      document.getElementById('resultImage').src = event.data;
+      document.getElementById('resultImage').style.display = 'block';
+    };
+    evtSource.onerror = function(err) {
+      console.error("Error in real-time stream:", err);
+      evtSource.close();
+    };
+  }
+
+  // You might call startRealTimeUpdates() when the user selects real-time denoising.
+  // For example, if the real-time denoising checkbox is checked:
+  document.getElementById('realtime_denoise').addEventListener('change', function() {
+    if (this.checked) {
+      startRealTimeUpdates();
+    }
+  });
+
+
+
+      document.getElementById('batch_size').addEventListener('input', function() {
+  const realtimeCheckbox = document.getElementById('realtime_denoise');
+  if (parseInt(this.value) > 1) {
+    realtimeCheckbox.disabled = true;
+    realtimeCheckbox.checked = false;
+  } else {
+    realtimeCheckbox.disabled = false;
+  }
+});
+
+
+document.getElementById('batch_size').addEventListener('input', function() {
+  const batchValue = parseInt(this.value);
+  const realtimeCheckbox = document.getElementById('realtime_denoise');
+  const realtimeMessage = document.getElementById('realtimeMessage');
+
+  // Force minimum batch size to 1
+  if (batchValue < 1) {
+    this.value = 1;
+  }
+
+  // If batch size is not exactly 1, disable the checkbox and show a message
+  if (parseInt(this.value) !== 1) {
+    realtimeCheckbox.disabled = true;
+    realtimeCheckbox.checked = false;
+    realtimeMessage.textContent = "Real-Time Denoising requires batch size = 1.";
+    realtimeMessage.style.display = 'inline';
+  } else {
+    realtimeCheckbox.disabled = false;
+    realtimeMessage.textContent = "";
+    realtimeMessage.style.display = 'none';
+  }
+});
+
+
+document.getElementById('video_fps').addEventListener('change', function() {
+  let val = parseInt(this.value);
+  // Round to nearest multiple of 5
+  let rounded = Math.round(val / 5) * 5;
+  // Clamp value between 5 and 120
+  if (rounded < 5) rounded = 5;
+  if (rounded > 120) rounded = 120;
+  this.value = rounded;
+});
+
+
+
+    // Poll the server for progress every second
+    setInterval(async function() {
+      try {
+        const response = await fetch('/progress');
+        const data = await response.json();
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        progressBar.value = data.progress;
+        progressText.textContent = data.progress + "/1000";
+        // Optionally ensure these elements are visible
+        progressBar.style.display = 'block';
+        progressText.style.display = 'block';
+      } catch (error) {
+        console.error('Error fetching progress:', error);
+      }
+    }, 1000);  // Poll every 1000 ms (1.000 second)
+
+
+
+    // Toggle advanced features with side drawer approach
+    const hamburgerButton = document.getElementById('hamburger-button');
+    const advancedPanel = document.getElementById('advancedPanel');
+
+    hamburgerButton.addEventListener('click', () => {
+      document.body.classList.toggle('show-advanced');
+    });
+
+    // Light/Dark Mode Toggle
+    document.getElementById('theme-toggle').addEventListener('click', function() {
+      document.body.classList.toggle('dark-mode');
+    });
+
+    // Generate Form Submission
+    document.getElementById('generateForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      const formData = new FormData(this);
+
+      // Show progress bar
+      const progressBar = document.getElementById('progressBar');
+      progressBar.style.display = 'block';
+      progressBar.value = 0;
+
+      // Fake progress for UI demonstration
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 10;
+        progressBar.value = progress;
+        if (progress >= 100) {
+          clearInterval(interval);
+        }
+      }, 500);
+
+      // Send request to backend
+      const response = await fetch('/generate', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (result.img_warning) {
+        alert(result.img_warning);
+      }
+
+
+      if (result.msk_warning) {
+        alert(result.msk_warning);
+      }
+
+      const resultImage = document.getElementById('resultImage');
+      const placeholder = document.getElementById('imagePlaceholder');
+
+      // Hide placeholder and show generated image
+      placeholder.style.display = 'none';
+      resultImage.src = `data:image/png;base64,${result.image}`;
+      resultImage.style.display = 'block';
+
+      // Show download button
+      document.getElementById('downloadButton').style.display = 'block';
+    });
+
+    // Update slider value text
+    const strengthSlider = document.getElementById('strength');
+    const strengthValue = document.getElementById('strengthValue');
+    strengthSlider.addEventListener('input', function() {
+      strengthValue.textContent = this.value;
+    });
+
+    // Clear file inputs
+    document.querySelectorAll('.clear-file').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const targetId = this.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+        input.value = null;
+      });
+    });
+
+
+
+document.getElementById('downloadButton').addEventListener('click', function() {
+  // Get the image element whose src contains the data URL.
+  const resultImage = document.getElementById('resultImage');
+  const imageURL = resultImage.src; // This should be a data URL like "data:image/png;base64,..."
+
+  // Create a temporary anchor element.
+  const a = document.createElement('a');
+  a.href = imageURL;
+  a.download = 'generated_image.png'; // Set the default filename.
+
+  // Append the anchor to the body, trigger a click, then remove it.
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+});
+
+
+
+
+document.getElementById('randomPromptBtn').addEventListener('click', async function() {
+  // Hide error if previously shown
+  const errorDiv = document.getElementById('randomPromptError');
+  errorDiv.style.display = 'none';
+
+  // Collect checked categories from random prompt categories container
+  const randomPromptContainer = document.querySelector('.random-prompt-categories');
+  const catBoxes = randomPromptContainer.querySelectorAll('input[type="checkbox"]:checked');
+
+  if (catBoxes.length === 0) {
+    // Show error if nothing is checked
+    errorDiv.style.display = 'block';
+    return;
+  }
+
+  // Build a list of category strings from the labels
+  const categories = [];
+  catBoxes.forEach(cb => {
+    categories.push(cb.labels[0].innerText.trim());
+  });
+
+  // Get the state of the "Use Training Prompts" checkbox
+  const useTraining = document.getElementById('use_training_prompts').checked;
+
+  // Build the query string with multiple categories and the boolean
+  const queryStr = categories.map(cat => `categories=${encodeURIComponent(cat)}`).join('&') +
+                   `&use_training_prompts=${useTraining}`;
+
+  try {
+    // Call the Flask route to get a random prompt
+    const response = await fetch(`/random_prompt?${queryStr}`);
+    const data = await response.json();
+    if (data.prompt) {
+      // Set the returned prompt in the prompt input field
+      document.getElementById('prompt').value = data.prompt;
+    }
+  } catch (err) {
+    console.error('Error fetching random prompt:', err);
+  }
+});
+
+
+    // Select/Deselect All for random prompt categories only
+    document.getElementById('selectAllBtn').addEventListener('click', function() {
+      const randomPromptContainer = document.querySelector('.random-prompt-categories');
+      const catBoxes = randomPromptContainer.querySelectorAll('input[type="checkbox"]');
+      catBoxes.forEach(cb => cb.checked = true);
+    });
+    document.getElementById('deselectAllBtn').addEventListener('click', function() {
+      const randomPromptContainer = document.querySelector('.random-prompt-categories');
+      const catBoxes = randomPromptContainer.querySelectorAll('input[type="checkbox"]');
+      catBoxes.forEach(cb => cb.checked = false);
+    });
+
+  // The vocab is now injected from Flask
+  const vocab = {{ vocab | tojson }};
+
+  const promptInput = document.getElementById('prompt');
+const suggestionsBox = document.getElementById('suggestionsBox');
+
+promptInput.addEventListener('input', async function() {
+  // Split input by spaces and use the last word as the query.
+  const words = this.value.split(" ");
+  const query = words[words.length - 1].trim();
+
+  if (!query) {
+    suggestionsBox.innerHTML = '';
+    suggestionsBox.style.display = 'none';
+    return;
+  }
+
+
+// Filter the vocab based on the query, then sort alphabetically, then take the top 5.
+const filtered = vocab.filter(word => word.toLowerCase().startsWith(query.toLowerCase()));
+const matches = filtered.sort((a, b) => a.localeCompare(b, undefined, { caseFirst: 'upper' })).slice(0, 5);
+
+
+
+  if (matches.length === 0) {
+    suggestionsBox.innerHTML = '';
+    suggestionsBox.style.display = 'none';
+    return;
+  }
+
+  let suggestionsHTML = '';
+  matches.forEach(word => {
+    suggestionsHTML += `<div class="suggestion-item">${word}</div>`;
+  });
+
+  suggestionsBox.innerHTML = suggestionsHTML;
+  suggestionsBox.style.display = 'block';
+});
+
+suggestionsBox.addEventListener('click', function(e) {
+  if (e.target.classList.contains('suggestion-item')) {
+    // Split current prompt value into words.
+    let words = promptInput.value.split(" ");
+    // Replace the last word with the chosen suggestion.
+    words[words.length - 1] = e.target.innerText;
+    // Rejoin the words with a trailing space.
+    promptInput.value = words.join(" ") + " ";
+    suggestionsBox.innerHTML = '';
+    suggestionsBox.style.display = 'none';
+  }
+});
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,493 @@
+/* General Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  color: #333;
+  transition: background 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  overflow-x: hidden; /* Prevent horizontal scroll when drawer is open */
+}
+
+.dark-mode {
+  background: linear-gradient(135deg, #1e1e2f, #2a2a40);
+  color: #fff;
+}
+
+/* Error Message */
+.error-msg {
+  color: #c00;
+  margin: 5px 0 10px;
+  font-size: 0.85rem;
+}
+
+/* Top Section */
+.top-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.top-title h1 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.top-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.top-controls button {
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.top-controls button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Hamburger Menu */
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.hamburger .line {
+  width: 25px;
+  height: 3px;
+  background: #333;
+  transition: background 0.3s ease;
+}
+
+.dark-mode .hamburger .line {
+  background: #fff;
+}
+
+/* Advanced Panel (Drawer) */
+.advanced-panel {
+  position: fixed;
+  top: 60px; /* below top-section */
+  left: -280px; /* start off-screen */
+  width: 280px;
+  height: calc(100% - 60px);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  overflow-y: auto;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+  transition: left 0.3s ease;
+  z-index: 999; /* Above main content */
+}
+
+.advanced-panel h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 18px;
+  color: #444;
+  text-align: center;
+}
+
+.advanced-panel label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: 500;
+  color: #555;
+}
+
+.advanced-panel input,
+.advanced-panel select,
+.advanced-panel button {
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  background-color: #fff;
+  margin-bottom: 10px;
+  transition: border-color 0.3s ease;
+}
+
+.advanced-panel input:focus,
+.advanced-panel select:focus {
+  border-color: #6a11cb;
+  outline: none;
+}
+
+/* Centered checkbox for Real-Time Denoising */
+.centered-checkbox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.centered-checkbox label {
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+/* Show advanced panel class on body */
+.show-advanced .advanced-panel {
+  left: 0; /* slide in */
+}
+
+/* Main Content shifts to the right when advanced panel is open */
+.main-content {
+  transition: margin-left 0.3s ease;
+  margin-left: 0;
+}
+
+.show-advanced .main-content {
+  margin-left: 280px; /* same width as advanced panel */
+}
+
+/* Container */
+.container {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Sidebar (Left) */
+.sidebar {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 18px;
+  color: #444;
+  text-align: center;
+}
+
+.sidebar label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: 500;
+  color: #555;
+}
+
+.sidebar input,
+.sidebar select,
+.sidebar button {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  background-color: #fff;
+  transition: border-color 0.3s ease;
+}
+
+.sidebar input:focus,
+.sidebar select:focus {
+  border-color: #6a11cb;
+  outline: none;
+}
+
+.generate-btn {
+  margin-top: 15px;
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.generate-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* File Input Wrapper for "x" button */
+.file-input-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.file-input-wrapper input[type="file"] {
+  flex: 1;
+  padding: 8px;
+  margin-right: 5px;
+}
+
+/* Right Section (Output) */
+.output-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.image-container {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.image-container h2 {
+  margin-bottom: 10px;
+}
+
+#imagePlaceholder {
+  padding: 20px;
+  background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  border-radius: 8px;
+  color: #555;
+}
+
+#resultImage {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+#progressBar {
+  width: 100%;
+  margin-top: 10px;
+  height: 8px;
+  border-radius: 4px;
+  background: #e0eafc;
+}
+
+#progressBar::-webkit-progress-value {
+  background: linear-gradient(90deg, #6a11cb, #2575fc);
+  border-radius: 4px;
+}
+
+#downloadButton {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+#downloadButton:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Prompt Container */
+.prompt-container {
+  width: 100%;
+  margin-top: auto;
+}
+
+.prompt-container label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #555;
+}
+
+.prompt-container input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  background-color: #fff;
+  transition: border-color 0.3s ease;
+}
+
+.prompt-container input:focus {
+  border-color: #6a11cb;
+  outline: none;
+}
+
+/* Config Row (Batch, CFG, Steps) in one row */
+.config-row {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.config-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+
+.config-item input[type="number"],
+.config-item input[type="range"],
+.config-item select {
+  width: 100%;
+}
+
+
+.checkbox-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center; /* Aligns checkbox and label */
+    gap: 8px; /* Spacing between checkbox and text */
+}
+
+.checkbox-item input {
+    width: 16px; /* Ensures consistent checkbox size */
+    height: 16px;
+    margin: 0;
+}
+
+.checkbox-item label {
+    font-size: 16px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.help-container {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: left;
+}
+
+.help-container h1 {
+    text-align: center;
+    color: #333;
+}
+
+.help-container ul {
+    padding-left: 20px;
+}
+
+.help-container button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 16px;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.help-container button:hover {
+    filter: brightness(1.2);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.progress-container {
+  position: relative;
+  width: 100%;
+  height: 20px;
+  background: #e0eafc;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.progress-bar-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #6a11cb, #2575fc);
+  transition: width 0.1s ease-in-out;
+}
+
+.progress-text {
+  position: absolute;
+  width: 100%;
+  top: 0;
+  left: 0;
+  text-align: center;
+  line-height: 20px;
+  color: #333;
+  font-size: 12px;
+}
+
+
