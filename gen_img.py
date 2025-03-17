@@ -15,7 +15,7 @@ print(f"Currently using {device=}\n")
 
 
 def use_test_prompts():
-    with open("test_prompts.txt", 'r') as f:
+    with open("temp.txt", 'r') as f:
         d = f.read().split("\n")
         d = [i for i in d if len(i) > 0]
 
@@ -23,16 +23,8 @@ def use_test_prompts():
     return d
 
 
-# prompts = ["Amidst the lively hum of a vibrant party, a man in green jeans sits focused on his laptop, the glow of the screen illuminating his face, surrounded by colorful lights and laughter.",
-#            "Golden autumn light filters through windows as a woman in a long coat walks gracefully across a cozy, warmly lit wooden floor.",
-#            "A young girl in a flowing autumn skirt, walking gracefully through a cozy house, warm golden light filtering through windows, fallen leaves scattered on wooden floors.",
-#            "Golden autumn light filters through large classroom windows, casting a warm glow on a young guy in a crisp yellow shirt, intently working on a laptop amidst scattered notebooks and fallen leaves.",
-#            "A cheerful girl in a bright yellow jacket chats on a sunlit beach, waves gently lapping the shore."
-#            ]
-prompts = ["bikini, purple, beach, waves, woman, golden, light"]# , "man, suit, white, trees, forest, park", "party, girl, lights, vibrant, blue"]
-# prompts = use_test_prompts()
-prompts = ["Beneath a radiant twilight sky, a fiery phoenix ascends majestically, its glowing plumage casting an ethereal light as molten embers trail in its wake, illuminating the heavens."]
-model_path = r"inference/diffusion_model_weights/epoch_110_model_tl_185_vl_205.pth"
+prompts = use_test_prompts()
+model_path = r"inference/diffusion_model_weights/epoch_375_model_tl_132_vl_155.pth"
 img_dim = 128
 num_images = 1
 
