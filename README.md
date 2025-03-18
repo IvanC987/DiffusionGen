@@ -1,5 +1,5 @@
 # Diffusion Model Interface
-
+# INCLUDE GIF IN README FOR DENOISING!
 ## Table of Contents
 - [Introduction](#introduction)
 - [Features](#features)
@@ -12,40 +12,80 @@
 
 ---
 
-(At the moment, this is the draft/informal version of the readme. Will update later on once final is completed.)
-
 
 ## Introduction
-This repository contains a web-based interface for interacting with a Latent Diffusion Model (LDM). Users can generate images from text prompts, upload images for transformation (Img2Img), perform inpainting, and apply (pseudo) real-time denoising.
+This project is a **custom-trained Latent Diffusion Model (LDM)** designed for **text-to-image generation, image transformation (Img2Img), inpainting, and real-time denoising**. The core of this repository is the **entire pipeline**, from **training a latent diffusion model from scratch** to providing an **interactive web-based interface** for users to generate and manipulate images.
 
-![GUI Image](readme_images/GUI_SS1.png)
+At its foundation, this project follows the **Denoising Diffusion Probabilistic Models (DDPM)** and **Denoising Diffusion Implicit Models (DDIM)** framework, utilizing **classifier-free guidance** and **VAE-encoded latent space** for more efficient training and inference. The model was trained on a **synthetic dataset generated using Stable Diffusion**, totaling **~100k augmented samples** across **four major categories**: **Humans, Animals, Mythical Beings, and Scenery**. 
 
+### **Key Highlights**
+- **Custom-Trained Diffusion Model**: Created and trained from scratch using a **100k-image dataset** with a hybrid **MSE + Perceptual Loss** function.
+- **Latent Diffusion for Efficiency**: Leverages a **Variational Autoencoder (VAE)** to compress image data into a **lower-dimensional latent space**, significantly improving training speed and memory efficiency.
+- **Multi-Stage Training Process**: The model was trained over **320 GPU hours**, incorporating **UNet-based noise prediction, CLIP text conditioning, and randomized timestep sampling**.
+- **Image Generation**: Enables **text-to-image generation** with **configurable guidance scales**, **sampling methods (DDPM, DDIM)**, and **denoising step adjustments**.
+- **Interactive Web UI**: Built using **Flask**, featuring **real-time progress tracking, img2img, inpainting, semi-real-time denoising visualization among many others**.
 
+<p align="center">
+  <img src="readme_images/GUI_SS1.png" alt="GUI Preview" width="700px">
+</p>
 
-## Features
-- Text-to-Image generation using Latent Diffusion Models
-- **Img2Img:** Modify existing images using diffusion processes
-- **Inpainting:** Remove and fill missing parts of an image with AI-generated content
-- **Real-Time Denoising:** View intermediate diffusion steps in near-real-time
-- Configurable advanced parameters (Batch Generation, CFG Scale, Denoising Steps, Sampling Methods (DDPM/DDIM), among many others)
-- Light/Dark mode UI toggle
-- Progress tracking with a live updating bar
-- Download and save generated images
+This project serves as a **practical implementation of diffusion models** for research and educational purposes. 
+
 
 ---
 
---To Adjust Later--
---------------------------------------
+
+## Features
+
+### **Core Diffusion Capabilities**
+- 🖼️ **Text-to-Image Generation** – Generate images from text prompts using a **custom-trained Latent Diffusion Model (LDM)**.
+- 🎨 **Img2Img (Image Transformation)** – Modify existing images by applying diffusion-based transformations
+- 🛠️ **Inpainting** – Fill in missing or removed portions of an image using AI-generated content.
+
+### **Advanced Customization**
+- ⚙️ **Configurable Parameters** – Fine-tune generation with:
+  - **Batch Size** (Generate multiple images simultaneously)
+  - **Classifier-Free Guidance (CFG) Scale** (Control prompt adherence)
+  - **Denoising Steps** (Adjust diffusion refinement level)
+  - **Sampling Method** – Choose between **DDPM (stochastic)** and **DDIM (deterministic)** for different generation styles.
+  
+### **User Experience Enhancements**
+- 📥 **Image Downloading** – Easily save generated images locally.
+- 🖼️ **Image Upscaling** – Optional **2x and 4x** upscaling with **Real-ESRGAN** for higher resolution outputs.
+- 🔄 **Random Prompt Generation** – Automatically generate structured prompts based on pre-defined or user-selected categories.
+- 🎭 **Mask Creation for Inpainting** – Allow users to create a binary mask for a given image.
+
+### **Interactive Real-Time Enhancements**
+- 🔄 **Real-Time Denoising** – Observe the image denoising process frame-by-frame by saving intermediate diffusion steps.
+- 📊 **Live Progress Tracking** – A dynamically updating progress bar visualizes the generation process in real time.
+
+
+
+### **Real-Time Denoising Feature**
+📌 **Example: Prompt –**  
+*A majestic phoenix engulfed in burning flames, its radiant feathers glowing with fiery brilliance.*
+
+<p align="center">
+  <img src="readme_images/denoise_ddim.gif" alt="Denoising GIF">
+</p>
+
+---
+
 
 ## Installation
 ### Prerequisites
 Ensure you have the following installed:
-- Python 3.8+
-- PyTorch
+- torch
 - torchvision
-- Flask
-- Diffusers library
-- Transformers (for CLIP text embeddings)
+- flask
+- diffusers
+- transformers
+- realesrgan
+- opencv-python
+(Probably missing some. Will add it later on when found)
+
+> **Note:** It is recommended to use a **virtual environment** to avoid dependency conflicts.  
+                                   
 
 ### Steps
 1. **Clone the repository**
@@ -56,35 +96,60 @@ Ensure you have the following installed:
 2. Due to GitHub restrictions, I have separated the Diffusion model weights and stored it in my HuggingFace Repo, which can be accessed at:
 `https://huggingface.co/DL-Hobbyist/DiffusionGen/tree/main/inference/diffusion_model_weights`
 Since each file is ~4.7GB, I would recommend choosing the 'best' version, epoch 375.
-Download whichever ones you would like to play around with and place them within the `DiffusionGen\inference\diffusion_model_weights` folder
+Download whichever ones you would like to play around with and place them within the following directory
 
+   ```sh
+   `DiffusionGen\inference\diffusion_model_weights`
+   ```
+   
 3. Install all the required packages in requirments.txt
 
 4. CD into `DiffusionGen` and run `python3 inference/app.py`
 
 
+The web interface should now be available at http://127.0.0.1:5000/
+
 Have Fun!
 
 
-*Important Notes- 
-1. You may need to authenticate and log into your huggingface account via `from huggingface_hub import login` as the OpenAI CLIP model and Stable Diffusion's VAE is pulled from HuggingFace
-2. It is likely that the error `ModuleNotFoundError: No module named 'torchvision.transforms.functional_tensor'` will pop up. It's due to deprecation of the package, to fix, simply navigate to the file `basicsr\data\degradations.py`
-And change the import from:
-`from torchvision.transforms.functional_tensor import rgb_to_grayscale`
-to
-`from torchvision.transforms.functional import rgb_to_grayscale`
+### Important Notes- 
 
+1. **HuggingFace Authentication**
+   You may need to authenticate and log into your HuggingFace account to access certain models. Use the following command:
+   ```python
+   from huggingface_hub import login
+   ```
+   This is necessary because the OpenAI CLIP model and Stable Diffusion's VAE are pulled from HuggingFace.
 
+<br>
 
+2. **Fixing `ModuleNotFoundError`**
+   If you encounter the error:
+   ```sh
+   ModuleNotFoundError: No module named 'torchvision.transforms.functional_tensor'
+   ```
+   This is due to the deprecation of the `functional_tensor` module. To resolve this:
+   - Navigate to the file:
+     ```sh
+     basicsr\data\degradations.py
+     ```
+   - Update the import statement from:
+     ```python
+     from torchvision.transforms.functional_tensor import rgb_to_grayscale
+     ```
+     to:
+     ```python
+     from torchvision.transforms.functional import rgb_to_grayscale
+     ```
 
---------------------------------------
+---
 
 
 ## Usage
 
 ### Running the Interface
-1. Enter a **text prompt** to generate an image.
-2. Adjust **CFG scale**, **Denoising Steps**, and **Batch Size** as needed.
+1. Enter a **text prompt** to generate an image. (Due to the way the model was trained, the prompts should follow a specific 'style'. Take a look at the provided prompts in the GUI along with 'Prompt Gen Tips' button at the top of the GUI)
+2. Adjust various parameters such as **CFG scale**, **Denoising Steps**, and **Batch Size** as needed.
 3. Click **Generate** to create an image.
 
 ### Using Img2Img
@@ -99,7 +164,7 @@ to
 - Upload an image and a binary mask to specify areas to fill.
 - Click **Generate** for inpainting.
 
-## Configuration
+### Configuration
 - **Batch Size:** Number of images to generate at once.
 - **CFG Scale:** Classifier-Free Guidance Scale (higher = more influence from prompt).
 - **Denoising Steps:** Number of steps in the reverse diffusion process.
@@ -107,7 +172,7 @@ to
 - **Sampling Method:** Choose between `DDPM` (stochastic) and `DDIM` (deterministic).
 
 
-## Additional Feature
+### Additional Feature
 Users can:
 - Choose to generate random prompts, which can be chosen from the training data or unseen data by the model (through the `Use Training Prompts` checkbox)
 - Select/Deselect certain categories for random prompt generation
@@ -125,71 +190,89 @@ Users can:
 - There are certain limitations of this model, which is detailed in the [Observations](#observations) section below
 
 
-
+---
 
 
 ## Model Training
 
-This will be a very comprehensive and detailed explanation of the backend. 
+This will be a very comprehensive explanation of how the model is trained. 
 I've split it into multiple sections, namely
+
 1. Dataset procurement/composition
-2. Model architecture/unet&diffusion hyperparameters
+2. Model architecture
 3. Training process
-4. Intermediate and final results
-
-
-Here goes. 
+4. Results
 
 
 
-1. Dataset Procurement and Composition
+### **1. Dataset Procurement and Composition**  
 
-Initially when I first started this project, one of the first things I thought of was the dataset. 
-What kind of dataset should I use? 
-Where do I get it? 
-The size of dataset? (e.g. number of text-images in the dataset)
-Quality? (This is of utmost concern)
-Resolution? (For this project, all image resolution should be fixed at 1:1 ratio)
-Style? (Realism, Abstract, Concept Art, Anime, etc.)
-Among others. 
+When starting this project, one of the first and most crucial considerations was the dataset.  
+Several key questions arose:  
+
+- **What type of dataset should I use?**  
+- **Where can I source it from?**  
+- **How large should the dataset be?** (e.g., number of text-image pairs)  
+- **How do I ensure high quality?** (A top priority)  
+- **What resolution should the images have?** (For this project, all images are fixed at a 1:1 aspect ratio)  
+- **What style should the images follow?** (Realism, Abstract, Concept Art, Anime, etc.)  
+- **What other factors should be considered?**  
+
+Among others, as dataset is a determining factor of the final model. 
+As people say, 'Garbage in, garbage out', no?
 
 
 I was looking through various dataset that HuggingFace offers, and although there are a lot of them, I couldn't quite decide on a particular dataset. 
-Mainly due to the following criterias: 
-1. Limited Computational resources. To train a model of this caliber, it must have at least ~10k or so images (my estimate), but should be less than 1 million images (Too large is computationally infeasible for me)
-2. Quality. The dataset shouldn't be mix and match type, where it have images of various resolution. Of course, using the PIL library to resize the image is an alternative, but that would likely degrade the quality of the dataset. Image resolution can't be too low either, as that will be detrimental to the model considering the limited number of training samples
-3. Style. While looking through various datasets, I realized that there are various styles of images. Like realism (images taken in real life), Concept Art, Anime, Cartoon, etc. I would need a dataset that focuses on a particular style, as having multiple styles would likely confuse the model during training (again, this likely wouldn't be a problem using a sufficiently powerful model/large dataset, but it's a problem here)
-4. Diversity. Limited by the number of training images, I would prefer a dataset that's as diverse as possible, but still have sufficient number of images per category (e.g. Humans like Man, Woman, Girl, Boy, etc., and Animals like Dogs, Cats, Fishes, etc.) so that the model can generalize well enough
-Among various other filters/considerations I had. 
+Mainly due to the following constraints: 
+
+1️⃣ **Limited Computational Resources**  
+   - To train a model of this caliber, I believed **at least ~10k images** would be necessary.  
+   - However, a dataset **around 1 million images or more** would be computationally infeasible (for me as a personal project). Hence, upper limit would be around a few hundred thousand or so images. 
+
+2️⃣ **Quality Concerns**  
+   - The dataset shouldn't be a **mix-and-match** of various resolutions.  
+   - While resizing images using **PIL** is an option, there is the problem of quality degradation (Downsampling is generally fine, but upsampling would be a problem).  
+   - Extremely low-res images would be detrimental to model performance given the limited number of training samples.  
+
+3️⃣ **Style Consistency**  
+   - Datasets vary widely in style—**realism, concept art, anime, cartoons, etc.**  
+   - A dataset with **mixed styles could confuse the model** during training.  
+   - Large-scale models can learn multiple styles effectively, like SD, but model of this size would have to focus on a single, or a few, style(s).
+
+4️⃣ **Diversity vs. Consistency**  
+   - The dataset should be **diverse enough** to allow generalization.  
+   - However, it should still contain **sufficient samples per category** (e.g., humans, animals, scenery) to ensure balanced learning.  
 
 In the end, I realized it wasn't very feasible to find my "ideal" dataset. 
 So the alternative? Stable Diffusion. 
 
-Thank God for SD being open source. 
+### **Generating a Synthetic Dataset with Stable Diffusion**
+Fortunately, **Stable Diffusion** is open-source, allowing me to **generate a custom dataset**.  
 
-I realized that although it may cost a bit, renting a GPU and pulling `stabilityai/stable-diffusion-3.5-large` from HF then generate images from it is possible. 
-A synthetic dataset. It may just work...
-
-After some consideration, I decided to proceed with that route due to the many benefit it provides. 
-1. I have control of what kind of images it produces and can specify things like category, resolution, # of images generated, and such.
-2. Can choose the style of generated images. So I was wondering whether or not realistic images may impact the model's performance.
-           - This mainly stems back when I was testing out DALLE from OpenAI. When I requested it to generate images, the resulting images were always of something like a cartoon-ish style. Where the image looks smooth with flowing gradients. Why not generate realistic images rather than ones like these? 
-          - My personal speculation was that it was because perhaps training a generative model on images like those is easier than realistic images. As in, with realisitc images, there are problems of things like JEPG compression, Noises, Blurs, etc, in addition to it being very "complex". Where it has sharp lines, contrastive edges, etc., However cartoon-ish/anime like images doesn't quite habe that problem. Not only does it look somewhat better at times (subjective opinion), it would make sense that it's easier to train on.
-          - Anyways, that's just my speculation. Taking that into account, that was another reason why I chose a syntehtic dataset using SD
+Instead of using an existing dataset, I decided to:  
+✅ **Rent a GPU** and use `stabilityai/stable-diffusion-3.5-large` from Hugging Face to generate images.  
+✅ Control dataset **composition**, including **categories, resolution, and number of images**.  
+✅ **Select a single style** to maintain consistency during training.
 
 
-Anyways. Now that I decided to use SD, my next question would be what kind of images do I want. 
 
-It'll take too long to go over everything I was thinking of, but in short, I chose the following categories/subcategories
+### **Final Dataset Composition**
+After careful consideration, I structured my dataset as follows:
 
-Humans- 10k Images (Man, Woman, Boy, Girl, Teen, Guy, Kid)
-Animals- 5k Images (Dog, Cat, Fish, Bird, Horse, Tiger, Wolf, Panda, Rhino, Whale)
-Mythical Beings- 5k Images (Qilin, Leviathan, Dragon, Fairy, Phoenix, Mermaid)
-Scenery- 5k Images (Desert, Rainforest, Mountain Lake, Snowy Mountain, Tropical Island, Deep Sea, Night Sky, Glacier, Volcano, Aurora Borealis, Underwater Cave, Savannah)
- 
+| **Category**        | **Approx. Image Count** | **Subcategories** |
+|---------------------|----------------------|------------------|
+| **Humans**         | **10k**               | Man, Woman, Boy, Girl, Teen, Guy, Kid |
+| **Animals**        | **5k**                | Dog, Cat, Fish, Bird, Horse, Tiger, Wolf, Panda, Rhino, Whale |
+| **Mythical Beings**| **5k**                | Qilin, Leviathan, Dragon, Fairy, Phoenix, Mermaid |
+| **Scenery**        | **5k**                | Desert, Rainforest, Mountain Lake, Snowy Mountain, Tropical Island, Deep Sea, Night Sky, Glacier, Volcano, Aurora Borealis, Underwater Cave, Savannah |
 
-Above number of images per categories are approximates. 
-In actuality, there's around 23.5k images total, not exactly 25k. I won't go into the details. 
+**Total:** ~23.5k images (not exactly 25k due to variations in generation).  
+
+The **human category contains twice as many images** as the others because:  
+- **Human generation is likely more common** in real-world applications.  
+- **Generating human figures is
+
+
 
 Anyways, the ratio of Humans compared to other three is twice the amount. 
 That's because I was thinking,
@@ -221,6 +304,82 @@ Hyperparameters used here is fairly common, won't go into that.
 Located in `config.py`
 
 
+I've also integrated 4 pretrained models, mentioned above, into the overarching pipeline 
+
+- VAE
+The Variational Autoencoder is what creates the latent representation of images, hence the 'Latent' in Latent Diffusion Model
+This allows the training time to be drastically reduced, in this case using SD's VAE, it downsamples the dimensions by 8x of goth width and height
+
+- CLIP
+OpenAI's Contrastive Language Image Pretraining model. 
+I won't go into details as that would take quite long, but it's the model that converts textual prompts into numerical representation of shape (# of prompts, 77, 512)
+Note that the 2nd and 3rd dimensions are fixed. 
+2nd dimension is the sequence length, where it's capped at 77 tokens, and padded if less than 77 tokens. 
+Often one would find SD give an error if one's prompt is too long (or warning with truncation), that's because SD also uses CLIP and it's capped at 77 tokens (~55 or so words)
+Though they have also added models like T5 to increase the limit
+3rd dimension is the embedding dimensionality of each token, primarily used in the attention mechanism
+
+- VGG16
+This model is used as part of the training loss objective as perceptual loss. Through testing, it kind of adds a "smoothing factor" to the resulting images. 
+I have added a link below in the acknowledgement section if interested in details. 
+When testing, I used various ratio of MSE and Perceptual Loss, here are the comparisons:
+
+Here are images using: 
+
+loss = MSE
+![Img3](readme_images/eval_images128_e30_231l/img_3.png)
+![Img6](readme_images/eval_images128_e30_231l/img_6.png)
+![Img9](readme_images/eval_images128_e30_231l/img_9.png)
+
+
+loss = MSE + 0.33 * perceptual
+![Img3](readme_images/eval_images_.33xper_e30_l316/img_3.png)
+![Img6](readme_images/eval_images_.33xper_e30_l316/img_6.png)
+![Img9](readme_images/eval_images_.33xper_e30_l316/img_9.png)
+
+
+loss = MSE + perceptual
+![Img3](readme_images/eval_images_1xper_e30_l482/img_3.png)
+![Img6](readme_images/eval_images_1xper_e30_l482/img_6.png)
+![Img9](readme_images/eval_images_1xper_e30_l482/img_9.png)
+
+
+loss = MSE + 3 * perceptual
+![Img3](readme_images/eval_images_3xper_e30_l958/img_3.png)
+![Img6](readme_images/eval_images_3xper_e30_l958/img_6.png)
+![Img9](readme_images/eval_images_3xper_e30_l958/img_9.png)
+
+
+loss = perceptual
+![Img3](readme_images/eval_img_onlypl_e30_l236/img_3.png)
+![Img6](readme_images/eval_img_onlypl_e30_l236/img_6.png)
+![Img9](readme_images/eval_img_onlypl_e30_l236/img_9.png)
+
+
+
+Doing what I can to keep a controlled environment, the model was trained for 30 epochs on the same dataset and same number of epochs.
+However due to the stochastic nature of this, even though the same prompt was given, image subjects does somewhat differ. 
+But overall, one can see that as the perceptual loss dominates the loss contribution, the images gets more and more "smoothed", until it is nearly a blur
+
+In the end, I decided to pick 
+loss = MSE + 0.25 * perceptual
+as the final loss. 
+
+
+
+
+- Real ESRGAN
+Also linked a reference to it below
+This model is not used during the training process, rather, used during inference
+Its main purpose is to upscale a given image and further refine it
+I have the 2x and 4x version. So the training dataset was based on 128x128 resolution images, when inferencing the model via `inference/app.py`, users have the option to choose using No Upsampling, 2x, and 4x the outputs. 
+Corresponding to 128x128, 256x256, and 512x512 resolution images. 
+Do note that although it upscale and refine the image, it is NOT the same as training/generating model of those resolution. Much better than direct upsample via methods like nearest neighbors, bilinear, and bicubic, but still have some limitations. 
+Though overall it does work very well. 
+
+
+
+
 3. Training Process
 The training hyperparameters are also located in `config.py`
 
@@ -249,6 +408,11 @@ Here's an example (Since VAE encodes image from 3 channels, RGB, to 4 latent cha
 ![VAE Encoded Image](readme_images/vae_encoded.png)
 
 
+
+
+
+
+4. Results
 
 During the training, I have stored the outputs below:
 
