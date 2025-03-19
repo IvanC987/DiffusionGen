@@ -1,5 +1,5 @@
 # Diffusion Model Interface
-# INCLUDE GIF IN README FOR DENOISING!
+
 ## Table of Contents
 - [Introduction](#introduction)
 - [Features](#features)
@@ -73,19 +73,6 @@ This project serves as a **practical implementation of diffusion models** for re
 
 
 ## Installation
-### Prerequisites
-Ensure you have the following installed:
-- torch
-- torchvision
-- flask
-- diffusers
-- transformers
-- realesrgan
-- opencv-python
-(Probably missing some. Will add it later on when found)
-
-> **Note:** It is recommended to use a **virtual environment** to avoid dependency conflicts.  
-                                   
 
 ### Steps
 1. **Clone the repository**
@@ -99,10 +86,14 @@ Since each file is ~4.7GB, I would recommend choosing the 'best' version, epoch 
 Download whichever ones you would like to play around with and place them within the following directory
 
    ```sh
-   `DiffusionGen\inference\diffusion_model_weights`
+   DiffusionGen\inference\diffusion_model_weights
    ```
    
-3. Install all the required packages in requirments.txt
+3. Install all the required pip packages in requirements.txt using
+
+   ```sh
+    pip install -r requirements.txt
+   ```
 
 4. CD into `DiffusionGen` and run `python3 inference/app.py`
 
@@ -142,6 +133,8 @@ Have Fun!
      from torchvision.transforms.functional import rgb_to_grayscale
      ```
 
+3. It is recommended to use a **virtual environment** (or docker container) to avoid dependency conflicts and possible environment pollution.  
+   
 ---
 
 
@@ -247,7 +240,7 @@ In the end, I realized it wasn't very feasible to find my "ideal" dataset.
 So the alternative? Stable Diffusion. 
 
 ### **Generating a Synthetic Dataset with Stable Diffusion**
-Fortunately, **Stable Diffusion** is open-source, allowing me to **generate a custom dataset**.  
+Fortunately, Stable Diffusion is open-source, allowing me to generate a custom dataset.  
 
 Instead of using an existing dataset, I decided to:  
 ✅ **Rent a GPU** and use `stabilityai/stable-diffusion-3.5-large` from Hugging Face to generate images.  
@@ -269,33 +262,40 @@ After careful consideration, I structured my dataset as follows:
 **Total:** ~23.5k images (not exactly 25k due to variations in generation).  
 
 The **human category contains twice as many images** as the others because:  
-- **Human generation is likely more common** in real-world applications.  
-- **Generating human figures is
-
-
-
-Anyways, the ratio of Humans compared to other three is twice the amount. 
-That's because I was thinking,
-1. Generation of human figures might be more common compared to other categories
-2. Human figures are hard to get correct
+- Human generation is likely more common in real-world applications.  
+- Generating human figures is hard to get correct
 
 And through testing, it seems that the latter is correct (Though the former depends on the user)
-Will touch more on this later on. 
+Will touch more on this later on in the Observation section below. 
 There's still a lot of more details that was omitted for the sake of conciseness. 
-Next is model architecture. 
 
 
 
-2. Model Architecture
-After going through multiple sources and a few weeks of research of Diffusion Models and how they work, I decided to implement a variation of my own (Which is definitely worse than production levels, but just copying and pasting defeats the purpose of this project)
 
-(Note that the core of the Diffusion Model is the UNet and that the following explaination may be techical. It would take too long to explain eveyrthing in detail)
+## **2. Model Architecture**
 
-I gathered everything together and built the UNet with the following blocks: 
-TimeEncoder- This class returns the encoding of the chosen timestep. Since it's quite similar to the positional encoding used in `Attention Is All You Need`, I just decided to use that 
-EncoderBlock- This contains 
-BottleNeck- 
-DecoderBlock-
+After spending several weeks on researching Diffusion Models and how they work, I decided to implement my own variation based on my knowledge. Needless to say it's not on par with production-level models, simply copying and pasting an existing implementation would have defeated the purpose of this project.  
+
+> **Note:** The core of a **Diffusion Model** is the **U-Net**. The following explanation may be somewhat technical, and covering all details extensively would take too long.  
+
+---
+
+### **U-Net Implementation**
+I designed my **U-Net** with the following components:  
+
+#### **Time Encoder**
+- Encodes the **chosen timestep** for diffusion.  
+- Since this is similar to **positional encoding** in *"Attention Is All You Need"*, I opted to use a **modified version** of that approach.  
+
+#### **Encoder Block**
+- [Provide description here if needed]  
+
+#### **Bottleneck**
+- [Provide description here if needed]  
+
+#### **Decoder Block**
+- [Provide description here if needed]  
+
 
 At the very end there's a sequential layer made of GroupNorm, SiLU, and Conv2D that returns the image (latent) tensor back into the original input tensor shape
 
@@ -304,212 +304,288 @@ Hyperparameters used here is fairly common, won't go into that.
 Located in `config.py`
 
 
+
+
 I've also integrated 4 pretrained models, mentioned above, into the overarching pipeline 
 
-- VAE
-The Variational Autoencoder is what creates the latent representation of images, hence the 'Latent' in Latent Diffusion Model
-This allows the training time to be drastically reduced, in this case using SD's VAE, it downsamples the dimensions by 8x of goth width and height
 
-- CLIP
-OpenAI's Contrastive Language Image Pretraining model. 
-I won't go into details as that would take quite long, but it's the model that converts textual prompts into numerical representation of shape (# of prompts, 77, 512)
-Note that the 2nd and 3rd dimensions are fixed. 
-2nd dimension is the sequence length, where it's capped at 77 tokens, and padded if less than 77 tokens. 
-Often one would find SD give an error if one's prompt is too long (or warning with truncation), that's because SD also uses CLIP and it's capped at 77 tokens (~55 or so words)
-Though they have also added models like T5 to increase the limit
-3rd dimension is the embedding dimensionality of each token, primarily used in the attention mechanism
+---
 
-- VGG16
-This model is used as part of the training loss objective as perceptual loss. Through testing, it kind of adds a "smoothing factor" to the resulting images. 
-I have added a link below in the acknowledgement section if interested in details. 
-When testing, I used various ratio of MSE and Perceptual Loss, here are the comparisons:
+### **📌 1. VAE (Variational Autoencoder)**
+- The VAE is responsible for creating the latent representation of images, giving the "Latent" in Latent Diffusion Model.
+- This significantly reduces training time by encoding images into a lower-dimensional space.
+- The Stable Diffusion VAE downsamples image dimensions by 8x in both width and height.
 
-Here are images using: 
+---
 
-loss = MSE
-![Img3](readme_images/eval_images128_e30_231l/img_3.png)
-![Img6](readme_images/eval_images128_e30_231l/img_6.png)
-![Img9](readme_images/eval_images128_e30_231l/img_9.png)
+### **📌 2. CLIP (Contrastive Language-Image Pretraining)**
+- OpenAI's CLIP model is used to convert text prompts into numerical embeddings for conditioning.
+- The output representation is of shape, (# of prompts, 77, 512)
+  - 77: Fixed sequence length (capped at 77 tokens, and it's usually padded at 77 tokens if prompt is short).
+  - 512: Dimensionality of each token embedding (used in Self/Cross attention).
+- Prompt Length Limitation:
+  - If a prompt exceeds 77 tokens (~55 words), it would usually be truncated or produce an error.
+  - One might notice that behavior when using SD, though additional models like T5 are added to extend the sequence length
 
 
-loss = MSE + 0.33 * perceptual
-![Img3](readme_images/eval_images_.33xper_e30_l316/img_3.png)
-![Img6](readme_images/eval_images_.33xper_e30_l316/img_6.png)
-![Img9](readme_images/eval_images_.33xper_e30_l316/img_9.png)
+### **📌 2. VGG16 (Contrastive Language-Image Pretraining)**
+- OpenAI's CLIP model is used to convert text prompts into numerical embeddings for conditioning.
+- The output representation is of shape, (# of prompts, 77, 512)
+  - 77: Fixed sequence length (capped at 77 tokens, and it's usually padded at 77 tokens if prompt is short).
+  - 512: Dimensionality of each token embedding (used in Self/Cross attention).
+- Prompt Length Limitation:
+  - If a prompt exceeds 77 tokens (~55 words), it would usually be truncated or produce an error.
+  - One might notice that behavior when using SD, though additional models like T5 are added to extend the sequence length
 
 
-loss = MSE + perceptual
-![Img3](readme_images/eval_images_1xper_e30_l482/img_3.png)
-![Img6](readme_images/eval_images_1xper_e30_l482/img_6.png)
-![Img9](readme_images/eval_images_1xper_e30_l482/img_9.png)
+## **📌 3. VGG16 for Perceptual Loss**
+The **VGG16 model**, developed by the **Visual Geometry Group (VGG) at Oxford**, is incorporated into the training process as part of the **loss function**.
 
+### **🔹 Why Use VGG16?**
+- It is used for **perceptual loss**, which **compares high-level features of images** rather than just pixel differences.
+- This helps the model **retain better structure and texture** in generated images.
+- Through testing, **perceptual loss added a smoothing effect**, reducing artifacts but also potentially leading to **over-smoothing** if weighted too heavily.
 
-loss = MSE + 3 * perceptual
-![Img3](readme_images/eval_images_3xper_e30_l958/img_3.png)
-![Img6](readme_images/eval_images_3xper_e30_l958/img_6.png)
-![Img9](readme_images/eval_images_3xper_e30_l958/img_9.png)
+---
 
+## **🔹 Loss Function Comparisons**
+To assess the impact of perceptual loss, I trained the model for **30 epochs on the same dataset** while keeping all other factors constant.
 
-loss = perceptual
-![Img3](readme_images/eval_img_onlypl_e30_l236/img_3.png)
-![Img6](readme_images/eval_img_onlypl_e30_l236/img_6.png)
-![Img9](readme_images/eval_img_onlypl_e30_l236/img_9.png)
+Below are **comparisons of different loss function weights**, showing how perceptual loss influences image generation.
 
+### **1️⃣ MSE Loss Only**
 
+<p align="center">
+  <img src="readme_images/eval_images128_e30_231l/img_3.png" width="128">
+  <img src="readme_images/eval_images128_e30_231l/img_6.png" width="128">
+  <img src="readme_images/eval_images128_e30_231l/img_9.png" width="128">
+</p>
 
-Doing what I can to keep a controlled environment, the model was trained for 30 epochs on the same dataset and same number of epochs.
-However due to the stochastic nature of this, even though the same prompt was given, image subjects does somewhat differ. 
-But overall, one can see that as the perceptual loss dominates the loss contribution, the images gets more and more "smoothed", until it is nearly a blur
+---
 
-In the end, I decided to pick 
-loss = MSE + 0.25 * perceptual
-as the final loss. 
+### **2️⃣ MSE + 0.33 × Perceptual Loss**
 
+<p align="center">
+  <img src="readme_images/eval_images_.33xper_e30_l316/img_3.png" width="128">
+  <img src="readme_images/eval_images_.33xper_e30_l316/img_6.png" width="128">
+  <img src="readme_images/eval_images_.33xper_e30_l316/img_9.png" width="128">
+</p>
 
+---
 
+### **3️⃣ MSE + 1 × Perceptual Loss**
 
-- Real ESRGAN
-Also linked a reference to it below
-This model is not used during the training process, rather, used during inference
-Its main purpose is to upscale a given image and further refine it
-I have the 2x and 4x version. So the training dataset was based on 128x128 resolution images, when inferencing the model via `inference/app.py`, users have the option to choose using No Upsampling, 2x, and 4x the outputs. 
-Corresponding to 128x128, 256x256, and 512x512 resolution images. 
-Do note that although it upscale and refine the image, it is NOT the same as training/generating model of those resolution. Much better than direct upsample via methods like nearest neighbors, bilinear, and bicubic, but still have some limitations. 
-Though overall it does work very well. 
+<p align="center">
+  <img src="readme_images/eval_images_1xper_e30_l482/img_3.png" width="v">
+  <img src="readme_images/eval_images_1xper_e30_l482/img_6.png" width="128">
+  <img src="readme_images/eval_images_1xper_e30_l482/img_9.png" width="128">
+</p>
 
+---
 
+### **4️⃣ MSE + 3 × Perceptual Loss**
 
+<p align="center">
+  <img src="readme_images/eval_images_3xper_e30_l958/img_3.png" width="128">
+  <img src="readme_images/eval_images_3xper_e30_l958/img_6.png" width="128">
+  <img src="readme_images/eval_images_3xper_e30_l958/img_9.png" width="128">
+</p>
 
-3. Training Process
-The training hyperparameters are also located in `config.py`
+---
 
-Before I started the official training, I artificially increased the dataset via data augmentation, primarily using horizontal flip and color adjustments. 
-So the final dataset was 4x the original size, composed of.
-1. Original Image
-2. Original Image + Color Adjustment
-3. Horizontal Flip
-4. Horizontal Flip + Color Adjustment
+### **5️⃣ Perceptual Loss Only**
 
-The corresponding prompt was copied 3 times. The two primary benefits of this is that
-1. Dataset is increased by 3x. Instead of ~23.5k images, it is now ~94k images. Considering the loss function is primarily based on MSE, this greatly helped the training
-2. There is now a 1-to-4 relationship between the text prompt and the images. For example, if a prompt is "A dog running across a bright green lawn", then there would be 4 images that corresponds to that. This would help the model generalize better, since all four images are valid for that prompt. Note that horizontal flip can only be used where images are not directionally dependent (e.g. Images containing texts)
+<p align="center">
+  <img src="readme_images/eval_img_onlypl_e30_l236/img_3.png" width="128">
+  <img src="readme_images/eval_img_onlypl_e30_l236/img_6.png" width="128">
+  <img src="readme_images/eval_img_onlypl_e30_l236/img_9.png" width="128">
+</p>
 
+---
 
-During the training process, the model would get a batch of randomly chosen images and encode via SD's VAE, where the tensor dimensions are (batch, channel, height, width)
-For example, input tensor shape might be (128, 3, 1024, 1024)
-output would then be (128, 4, 128, 128)
+In the end, I settled with a balance between the two using:
 
-Here's an example (Since VAE encodes image from 3 channels, RGB, to 4 latent channels, it doesn't quite do it justice to try to represent the latent channels as RGB, but this just kind of "shows" what it does)
-
-
-
-![Original Image](readme_images/original_img.png)
-
-![VAE Encoded Image](readme_images/vae_encoded.png)
-
-
+```sh
+final_loss = MSE + 0.25 * perceptual_loss
+```
 
 
 
 
-4. Results
+### **📌 4. Real-ESRGAN for Image Upscaling**
+- Upscales and refines images for higher-resolution outputs.
+- Provides 2x and 4x upscaling options.
+- Helps improve image clarity and detail (better than traditional methods like nearest neighbor, bilinear, and bicubic).
+
+---
+
+Do note that although it upscale and refine the image, it is **NOT** the same as training/generating model of those resolution. 
+Also, **Real-ESRGAN** is not used during training but is integrated into inference to enhance and upscale generated images.
+
+
+
+
+## **3. Training Process**
+
+The training hyperparameters are located in `config.py`.
+
+Before starting the official training, I artificially increased the dataset via data augmentation, primarily using **horizontal flip** and **color adjustments**. The final dataset was **4x the original size**, composed of:
+
+1. **Original Image**
+2. **Original Image + Color Adjustment**
+3. **Horizontal Flip**
+4. **Horizontal Flip + Color Adjustment**
+
+The corresponding prompt was copied **3 times**. The two primary benefits of this approach are:
+
+1. **Dataset Size Increase**: The dataset size increased from ~23.5k images to ~94k images. Since the loss function is primarily based on **MSE (Mean Squared Error)**, this greatly aided the training process.
+2. **1-to-4 Relationship Between Text and Images**: Each text prompt now corresponds to **4 images**. For example, if the prompt is *"A dog running across a bright green lawn"*, there would be 4 images associated with it. This helps the model generalize better, as all four images are valid representations of the prompt.  
+   **Note**: Horizontal flip can only be used for images that are not directionally dependent (e.g., images containing text).
+
+---
+
+### **Training Details**
+
+During the training process, the model processes a batch of randomly chosen images, which are encoded using **Stable Diffusion's VAE (Variational Autoencoder)**. The tensor dimensions are as follows:
+
+- **Input Tensor Shape**: `(batch, channel, height, width)`  
+  Example: `(128, 3, 1024, 1024)`  
+- **Output Tensor Shape**: `(128, 4, 128, 128)`  
+
+---
+
+### **Example**
+
+Since the VAE encodes an image from **3 channels (RGB)** to **4 latent channels**, it’s challenging to represent the latent channels as RGB. However, the following example provides a visual representation of the process:
+
+📌 **Original 1024x1024 Image**:
+
+<p align="center">  
+  <img src="readme_images/original_img.png" width="1024">  
+</p>  
+
+📌 **VAE Encoded 128x128 Representation**:
+
+<p align="center">  
+  <img src="readme_images/vae_encoded.png" width="128">  
+</p>  
+
+
+
+
+### 4. Results
 
 During the training, I have stored the outputs below:
 
+#### Loss Files:
+- **`epoch_loss.txt`**: Details the epoch number, training loss, mse_loss, perceptual loss, validation loss, learning rate, and time taken (in seconds).
+- **`final_custom_losses.txt`**: Stores space-separated loss values for training loss, mse_loss, and perceptual loss per training step.
+- **`final_custom_val_losses.txt`**: Stores the validation loss per training step.
 
-I have included the three loss files.
-`epoch_loss.txt`- Details the epoch number, training loss, mse_loss, perceptual loss, validation loss, learning rate, and time taken (in seconds)
-`final_custom_losses.txt`- Stores space separated loss values for training loss, mse_loss, perceptual loss per training step
-`final_custom_val_losses.txt`- Stores the validation loss per training step
+> **Note**: For `mse_loss` and `perceptual_loss`, I've accidentally scaled them by 4x. However, all other losses are correct.
 
-(For mse_loss and perceptual loss, I've accidentally scaled it by 4x. However all other losses are correct.)
+---
 
+#### Training Details:
+After training the model for about **320 GPU hours** on a single A40 (~14 days), here are the results:
 
-After training the model for about 320 GPU hours on a single A40 (~14 days), here are the results: 
-
-
-Plot of Training and Validation Loss:
-![Train and Val Loss Image](readme_images/train_val_loss.png)
-
-
-
-Overall, the training progress was surprisingly stable. 
-Like most models first few epochs drastically reduces the loss. 
-Then for the next ~200 or so epochs it stabilizes and loss decreases linearly, which is surprising.
-At around epoch 50, the loss starts to diverge, however they are still proportionally decreasing. 
-After ~200 epoch mark, it starts to plateau, which is to be expected. Although it's hard to tell, however both losses are slighly decreasing for the next ~180 epochs.
-However due to time and computational limitations, I had to stop training and cut it off at epoch 380, where the most recent version, epoch 375 is currently the best in both losses.
+<p align="center">
+  <img src="readme_images/train_val_loss.png" alt="Train and Val Loss Image" width="512">
+</p>
 
 
-This graph was plotted using the two final loss files, where I averaged every 19 step's losses into a single value (since ratio of training to validation was approximately 19:1)
-However the lines still fluctuate too much and so I further averaged 25 values into a single scalar. 
-
-(The graph seemed to be right-shifted by a slight margin, not sure why)
-
-
+- The training progress was surprisingly stable.
+- Like most models, the first few epochs drastically reduce the loss.
+- For the next ~200 epochs, the loss stabilizes and decreases linearly, which is surprising.
+- At around epoch 50, the loss starts to diverge, but they are still proportionally decreasing.
+- After the ~200 epoch mark, the loss starts to plateau, which is expected. Although it's hard to tell, both losses are slightly decreasing for the next ~180 epochs.
+- Due to time and computational limitations, I had to stop training and cut it off at epoch 380. The most recent version, epoch 375, is currently the best in terms of both losses.
+- This graph was plotted using the two final loss files, where I averaged every 19 steps losses into a single value (since the ratio of training to validation was approximately 19:1).
+- To reduce fluctuations, I further averaged 25 values into a single scalar.
+- The graph does seem to be right-shifted by a slight margin (not sure why).
 
 
 
 ## Observations
 
-When testing out the final model, I noticed the following: 
+When testing out the final model, I noticed the following:
 
-1. Output quality varies across categories 
-When users enter a prompt in the 'Scenery' category, usually the generated image would look decently better than those of other categories (Humans, Animals, and Mythical Beings)
-I attributed this to our internal bias and model objective. 
-Whether or not an image looks "good" is inherently subjective to us. If a given prompt is something like "A horse galloping across a grassland...", then we would expect to see an image where the main subject is a horse galloping, and grassland as background. 
-However if an image is generated, one would notice that the 'horse' would be somewhat blurry/lower quality, relative to the background.
-Recall that the training objective of the model is the MSE loss. The way that the loss is calculated would make the model weight all the pixels equally. The "subject" would take up less area of the image compared to the background. 
-Hence generally the background, when relatively uniform, would look better compared to the main subject. 
-This is esepcially the case when comparing text prompts of small subjects like cat vs larger subjects like rhino. The former is noticeably more blurred compared to the latter. 
+---
 
-This is the primary reason why the I made the 'Humans' category of the dataset double the size of other categories. 
-Although people take up a fair chunk of the total pixels, majority of the time it is around ~20%. The rest is all common background. 
-Assuming 20%, we ourselves would be especially biased towards certain parts of the generated person in question. For example, it is commonly the case that we would scrutinize the facial feature of the person in the image compared to other body parts (like arms, legs, body, etc.)
-And the final result proved that this was indeed the case. 
-The model would weight the facial feature of the humans equally with all other pixels, like background and such, and so it would be especially blurred. 
-...
+### 1. Output Quality Varies Across Categories
 
+When users enter a prompt in the **'Scenery'** category, usually the generated image would look decently better than those of other categories (**Humans**, **Animals**, and **Mythical Beings**).
+I attributed this to our internal bias and model objective.  
+Whether or not an image looks "good" is inherently subjective to us. If a given prompt is something like *"A horse galloping across a grassland..."*, then we would expect to see an image where the main subject is a horse galloping, and grassland as background.  
+However, if an image is generated, one would notice that the **'horse'** would be somewhat blurry/lower quality, relative to the background.  
+Recall that the training objective of the model is the **MSE loss**. The way that the loss is calculated would make the model weight all the pixels equally. The **"subject"** would take up less area of the image compared to the background.  
+Hence, generally, the background—when relatively uniform—would look better compared to the main subject.  
+This is especially the case when comparing text prompts of small subjects like **cat** vs larger subjects like **rhino**. The former is noticeably more blurred compared to the latter.  
+This is the primary reason why I made the **'Humans'** category of the dataset double the size of other categories.  
+Although people take up a fair chunk of the total pixels, the majority of the time it is around **~20%**. The rest is all common background.  
+Assuming **20%**, we ourselves would be especially biased towards certain parts of the generated person in question. For example, it is commonly the case that we would scrutinize the facial feature of the person in the image compared to other body parts (like arms, legs, body, etc.).  
+And the final result proved that this was indeed the case.  
+The model would weight the facial feature of the humans equally with all other pixels, like background and such, and so it would be especially 'blurred' in a way.  
 
-2. Diversity of output images
-In general, when generating images via models like Stable diffusion, the output would be quite diverse given the same prompt. 
-This is due to how the initial image is created and process of image generation. 
-However this model's output is relatively fixed. When giving the model the same prompt, the output would very different, but highly similar. 
+---
 
-I suspect this is due to the dataset, rather than model architecture/training itself. 
-Assume the dataset has 25k images for simplicity. 
-10k is Humans
-5k for each of the remaining categories (Animals, Mythical Beings, Scenery)
+### 2. Diversity of Output Images
 
-Take a look at for example, scenery. 
-There are 12 subcategories, (Desert, Rainforest, Mountain Lake, Snowy Mountain, Tropical Island, Deep Sea, Night Sky, Glacier, Volcano, Aurora Borealis, Underwater Cave, Savannah),
+In general, when generating images via models like **Stable Diffusion**, the output would be quite diverse given the same prompt.  
+This is due to how the initial image is created and the process of image generation.  
+However, this model's output is relatively fixed. When giving the model the same prompt, the output would be vary slightly but overall stay highly similar.  
+I suspect this is due to the dataset, rather than the model architecture/training itself.  
+Assume the dataset has **25k images** for simplicity:  
+- **10k** is **Humans**  
+- **5k** for each of the remaining categories (**Animals**, **Mythical Beings**, **Scenery**)  
 
-The prompts are selected at random through uniform distribution, and so it's fair to assume that in the entire dataset would have
-approximately 420 images per subcategory. This is extremely low, nearly the bare minimum needed to even train a diffusion model I would say.
-(There's also the problem of diversity of descriptive adjectives in textual prompts, but that will take a while to explain)
+Take a look at, for example, **Scenery**.  
+There are **12 subcategories**:  
+- Desert  
+- Rainforest  
+- Mountain Lake  
+- Snowy Mountain  
+- Tropical Island  
+- Deep Sea  
+- Night Sky  
+- Glacier  
+- Volcano  
+- Aurora Borealis  
+- Underwater Cave  
+- Savannah  
 
-Anyways, 420 image per category. That is very low. 
-And so you can imagine how limited the diversity of the dataset is. 
-Stable Diffusion is trained on the LAION dataset, in the magnitude of billions of images, whereas this uses 100k (with augmentation). So it's nowhere near comparable, in terms of dataset size. 
-
-TLDR: Limited dataset -> Limited Output
-
-
-3. Img2Img
-This feature is very interesting, however due to the problem mentioned above, the output is often blurry and of low quality. 
-Unfortunately that can't be helped. This stems from the training dataset, rather than from implementation, so...yeah
-
-
-4. Inpaininting
-Likewise, this is also somewhat forced. Viewed in real-time denoising it's fairly intriguing, but outputs are quite....bad. 
-Welp. 
-
-
-Think there's a few more. Will add those later on. 
+The prompts are selected at random through uniform distribution, and so it's fair to assume that in the entire dataset, there would be approximately **420 images per subcategory**.  
+This is extremely low—nearly the bare minimum needed to even train a diffusion model, I would say.  
+(There's also the problem of diversity of descriptive adjectives in textual prompts which I won't go into)  
+Anyways, **420 images per category**. That is very low.  
+And so, you can imagine how limited the diversity of the dataset is.  
+**Stable Diffusion** is trained on the **LAION dataset**, in the magnitude of **billions of images**, whereas this uses **100k (with augmentation)**. So it's nowhere near comparable, in terms of dataset size.  
 
 
-And so this concludes the informal version of readme. The final version should be completed in another day or two. 
+**TLDR:** Limited dataset → Limited Output  
 
+---
+
+### 3. Img2Img  
+
+This feature is very interesting; however, due to the problem mentioned above, the output is often blurry and of low quality.  
+Unfortunately, that can't be helped. This stems from the training dataset, rather than from implementation, so ¯\_(ツ)_/¯.  
+
+---
+
+### 4. Inpainting  
+
+Likewise, this is also somewhat forced. Viewed in real-time denoising, it's fairly intriguing, but outputs are quite...bad.  
+Welp.  
+
+
+---
+
+And this concludes the end of this project. 
+I tried to strike a balance between keeping it detailed but not overly long, so I had to cut out some additional parts. 
+Anyways, this was a very interesting project and would likely revisit it later in the future with various improvements, particularly with a focus on the dataset. 
+
+---
 
 
 
