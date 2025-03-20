@@ -2,8 +2,8 @@
 
 ## Table of Contents
 - [Introduction](#introduction)
-- [Features](#features)
 - [Installation](#installation)
+- [Features](#features)
 - [Usage](#usage)
 - [Model Training](#model-training)
 - [Observations](#observations)
@@ -34,42 +34,6 @@ This project serves as a **practical implementation of diffusion models** for re
 
 ---
 
-
-## Features
-
-### **Core Diffusion Capabilities**
-- 🖼️ **Text-to-Image Generation** – Generate images from text prompts using a **custom-trained Latent Diffusion Model (LDM)**.
-- 🎨 **Img2Img (Image Transformation)** – Modify existing images by applying diffusion-based transformations
-- 🛠️ **Inpainting** – Fill in missing or removed portions of an image using AI-generated content.
-
-### **Advanced Customization**
-- ⚙️ **Configurable Parameters** – Fine-tune generation with:
-  - **Batch Size** (Generate multiple images simultaneously)
-  - **Classifier-Free Guidance (CFG) Scale** (Control prompt adherence)
-  - **Denoising Steps** (Adjust diffusion refinement level)
-  - **Sampling Method** – Choose between **DDPM (stochastic)** and **DDIM (deterministic)** for different generation styles.
-  
-### **User Experience Enhancements**
-- 📥 **Image Downloading** – Easily save generated images locally.
-- 🖼️ **Image Upscaling** – Optional **2x and 4x** upscaling with **Real-ESRGAN** for higher resolution outputs.
-- 🔄 **Random Prompt Generation** – Automatically generate structured prompts based on pre-defined or user-selected categories.
-- 🎭 **Mask Creation for Inpainting** – Allow users to create a binary mask for a given image.
-
-### **Interactive Real-Time Enhancements**
-- 🔄 **Real-Time Denoising** – Observe the image denoising process frame-by-frame by saving intermediate diffusion steps.
-- 📊 **Live Progress Tracking** – A dynamically updating progress bar visualizes the generation process in real time.
-
-
-
-### **Real-Time Denoising Feature**
-📌 **Example: Prompt –**  
-*A majestic phoenix engulfed in burning flames, its radiant feathers glowing with fiery brilliance.*
-
-<p align="center">
-  <img src="readme_images/denoise_ddim.gif" alt="Denoising GIF">
-</p>
-
----
 
 
 ## Installation
@@ -135,6 +99,46 @@ Have Fun!
 
 3. It is recommended to use a **virtual environment** (or docker container) to avoid dependency conflicts and possible environment pollution.  
    
+
+
+---
+
+
+
+## Features
+
+### **Core Diffusion Capabilities**
+- 🖼️ **Text-to-Image Generation** – Generate images from text prompts using a **custom-trained Latent Diffusion Model (LDM)**.
+- 🎨 **Img2Img (Image Transformation)** – Modify existing images by applying diffusion-based transformations
+- 🛠️ **Inpainting** – Fill in missing or removed portions of an image using AI-generated content.
+
+### **Advanced Customization**
+- ⚙️ **Configurable Parameters** – Fine-tune generation with:
+  - **Batch Size** (Generate multiple images simultaneously)
+  - **Classifier-Free Guidance (CFG) Scale** (Control prompt adherence)
+  - **Denoising Steps** (Adjust diffusion refinement level)
+  - **Sampling Method** – Choose between **DDPM (stochastic)** and **DDIM (deterministic)** for different generation styles.
+  
+### **User Experience Enhancements**
+- 📥 **Image Downloading** – Easily save generated images locally.
+- 🖼️ **Image Upscaling** – Optional **2x and 4x** upscaling with **Real-ESRGAN** for higher resolution outputs.
+- 🔄 **Random Prompt Generation** – Automatically generate structured prompts based on pre-defined or user-selected categories.
+- 🎭 **Mask Creation for Inpainting** – Allow users to create a binary mask for a given image.
+
+### **Interactive Real-Time Enhancements**
+- 🔄 **Real-Time Denoising** – Observe the image denoising process frame-by-frame by saving intermediate diffusion steps.
+- 📊 **Live Progress Tracking** – A dynamically updating progress bar visualizes the generation process in real time.
+
+
+
+### **Real-Time Denoising Feature**
+📌 **Example: Prompt –**  
+*A majestic phoenix engulfed in burning flames, its radiant feathers glowing with fiery brilliance.*
+
+<p align="center">
+  <img src="readme_images/denoise_ddim.gif" alt="Denoising GIF">
+</p>
+
 ---
 
 
@@ -284,27 +288,35 @@ After spending several weeks on researching Diffusion Models and how they work, 
 I designed my **U-Net** with the following components:  
 
 #### **Time Encoder**
-- Encodes the **chosen timestep** for diffusion.  
-- Since this is similar to **positional encoding** in *"Attention Is All You Need"*, I opted to use a **modified version** of that approach.  
+- Encodes the chosen timestep for diffusion.  
+- Since this is similar to positional encoding in "Attention Is All You Need", I opted to use a modified version of that approach.  
 
 #### **Encoder Block**
-- [Provide description here if needed]  
+- Processes input latent representations while progressively downsampling the spatial dimensions.  
+- Uses residual connections and group normalization for stable training.  
+- Injects timestep embeddings and applies cross-attention to incorporate text conditioning.  
+- Downsampling is performed via strided convolution layers at the end of each block.
+ 
 
 #### **Bottleneck**
-- [Provide description here if needed]  
+- The deepest part of the U-Net, acting as a compressed latent space representation.  
+- Maintains the same spatial resolution while capturing global dependencies.  
+- Utilizes self-attention layers for improved contextual understanding across the entire image.  
+- Residual layers and timestep embeddings enhance feature learning and prevent information loss.
+
 
 #### **Decoder Block**
-- [Provide description here if needed]  
+- Upsamples the latent representation to reconstruct fine-grained image details.  
+- Uses skip connections to combine encoder features, preserving high-resolution information.  
+- Applies cross-attention layers for text alignment and further refinement.  
+- Upsampling is performed through transposed convolution layers for smooth reconstruction.  
+
 
 
 At the very end there's a sequential layer made of GroupNorm, SiLU, and Conv2D that returns the image (latent) tensor back into the original input tensor shape
 
-
 Hyperparameters used here is fairly common, won't go into that. 
 Located in `config.py`
-
-
-
 
 I've also integrated 4 pretrained models, mentioned above, into the overarching pipeline 
 
@@ -327,16 +339,7 @@ I've also integrated 4 pretrained models, mentioned above, into the overarching 
   - If a prompt exceeds 77 tokens (~55 words), it would usually be truncated or produce an error.
   - One might notice that behavior when using SD, though additional models like T5 are added to extend the sequence length
 
-
-### **📌 2. VGG16 (Contrastive Language-Image Pretraining)**
-- OpenAI's CLIP model is used to convert text prompts into numerical embeddings for conditioning.
-- The output representation is of shape, (# of prompts, 77, 512)
-  - 77: Fixed sequence length (capped at 77 tokens, and it's usually padded at 77 tokens if prompt is short).
-  - 512: Dimensionality of each token embedding (used in Self/Cross attention).
-- Prompt Length Limitation:
-  - If a prompt exceeds 77 tokens (~55 words), it would usually be truncated or produce an error.
-  - One might notice that behavior when using SD, though additional models like T5 are added to extend the sequence length
-
+    
 
 ## **📌 3. VGG16 for Perceptual Loss**
 The **VGG16 model**, developed by the **Visual Geometry Group (VGG) at Oxford**, is incorporated into the training process as part of the **loss function**.
@@ -503,6 +506,43 @@ After training the model for about **320 GPU hours** on a single A40 (~14 days),
 - This graph was plotted using the two final loss files, where I averaged every 19 steps losses into a single value (since the ratio of training to validation was approximately 19:1).
 - To reduce fluctuations, I further averaged 25 values into a single scalar.
 - The graph does seem to be right-shifted by a slight margin (not sure why).
+
+
+
+#### Images During Training:
+
+**Images at epoch 10 (Training Loss = 0.2895, Validation Loss = 0.2815):**
+
+<p align="center">
+  <img src="readme_images/eval_img_e10/img_0.png" width="128">
+  <img src="readme_images/eval_img_e10/img_1.png" width="128">
+  <img src="readme_images/eval_img_e10/img_2.png" width="128">
+</p>
+
+**Images at epoch 60 (Training Loss = 0.2392, Validation Loss = 0.2496):**
+
+<p align="center">
+  <img src="readme_images/eval_img_e60/img_0.png" width="128">
+  <img src="readme_images/eval_img_e60/img_1.png" width="128">
+  <img src="readme_images/eval_img_e60/img_2.png" width="128">
+</p>
+
+**Images at epoch 180 (Training Loss = 0.1484, Validation Loss = 0.1636):**
+
+<p align="center">
+  <img src="readme_images/eval_img_e180/img_0.png" width="128">
+  <img src="readme_images/eval_img_e180/img_1.png" width="128">
+  <img src="readme_images/eval_img_e180/img_2.png" width="128">
+</p>
+
+---
+
+**Notes:**
+- Although I trained up to 375 epochs, I stopped testing at epoch 180 for intermediate images due to minimal differences between epochs as the loss starts to plateau.
+- However, I overlooked and forgot to generate and save the images for the model at epoch 375 for an added comparison here.
+- For epoch 375: Training Loss = 0.1325, Validation Loss = 0.1553.
+- Also, the first two images use training prompts, and the last image is from the validation prompts.
+
 
 
 

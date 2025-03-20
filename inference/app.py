@@ -337,7 +337,7 @@ if __name__ == '__main__':
     vae_path = "stabilityai/sd-vae-ft-ema"
     clip_path = "openai/clip-vit-base-patch32"
 
-    image_size = 128  # Image dimension. Default value is 128 (base 2 square images)
+    image_size = 128  # Image dimension. Default Howvalue is 128 (base 2 square images)
     current_progress = 0  # Value for progress bar
 
     assert os.path.isdir("diffusion_model_weights")  # Make sure that this folder exists, as it holds the diffusion model weights
